@@ -142,9 +142,9 @@ as the inverse task of building multiparts from several simple geometries.
 ```SQL
 -- Find up to 15 multipart parcels, with their corresponding state_pin
 SELECT state_pin
-	, ST_NumGeometries(geom) 
+	,ST_NumGeometries(shape) 
 FROM parcels
-WHERE ST_NumGeometries(geom) > 1
+WHERE ST_NumGeometries(shape) > 1
 LIMIT 15;
 
 -- Convert multipolygon to polygon
@@ -152,10 +152,10 @@ LIMIT 15;
 -- to our results.  This is useful for generating unique IDs in a query.
 SELECT ROW_NUMBER() OVER () AS row_id
   , state_pin
-	, (ST_Dump(geom)).path AS path
-	, (ST_Dump(geom)).geom AS geom
+	, (ST_Dump(shape)).path AS path
+	, (ST_Dump(shape)).geom AS geom
 FROM parcels
-WHERE ST_NumGeometries(geom) > 1
+WHERE ST_NumGeometries(shape) > 1
 LIMIT 15;
 
 -- Rebuild multipoints from singles with shared attributes
