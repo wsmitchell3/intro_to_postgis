@@ -114,6 +114,7 @@ The `ST_MakePolygon` function takes either a closed `LINESTRING` or a closed
 SELECT ST_SetSRID(
 	ST_MakePolygon(
 		ST_GeomFromText('LINESTRING(-93 44, -93 45, -95 45, -93 44)'
+			)
 	)
 	, 4326
 );
