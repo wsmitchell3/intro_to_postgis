@@ -213,16 +213,16 @@ For point-in-polygon, we can use the `ST_Contains` function to query if _A_ cont
 
 ```SQL
 -- Get parcels that contain a polling place
-SELECT mpp.id, p.state_pin, p.anumber, p.st_pre_dir, p.st_name, p.st_pos_typ, p.st_pos_dir, p.postcomm, p.state_code, p.zip, p.zip4, p.geom
+SELECT mpp.id, p.state_pin, p.anumber, p.st_pre_dir, p.st_name, p.st_pos_typ, p.st_pos_dir, p.postcomm, p.state_code, p.zip, p.zip4, p.shape
 FROM parcels AS p
-INNER JOIN mock_polling_place AS mpp ON ST_Contains(p.geom, mpp.geom)
+INNER JOIN mock_polling_place AS mpp ON ST_Contains(p.shape, mpp.geom)
 ;
 
 -- Huh, no rows returned.  What are the coordinate systems?
 -- Let's try again with both in UTM-15 N (26915)
-SELECT mpp.id, p.state_pin, p.anumber, p.st_pre_dir, p.st_name, p.st_pos_typ, p.st_pos_dir, p.postcomm, p.state_code, p.zip, p.zip4, p.geom
+SELECT mpp.id, p.state_pin, p.anumber, p.st_pre_dir, p.st_name, p.st_pos_typ, p.st_pos_dir, p.postcomm, p.state_code, p.zip, p.zip4, p.shape
 FROM parcels AS p
-INNER JOIN mock_polling_place AS mpp ON ST_Contains(p.geom, ST_Transform(mpp.geom, 26915))
+INNER JOIN mock_polling_place AS mpp ON ST_Contains(p.shape, ST_Transform(mpp.geom, 26915))
 ;
 
 
