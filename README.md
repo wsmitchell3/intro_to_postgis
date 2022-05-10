@@ -284,12 +284,12 @@ REFRESH MATERIALIZED VIEW mvw_mock_polling_place;
 ```
 
 
-Let's continue by finding the number of parcels which intersect each of the polling places, and order them by the precinct.  For this we'll use `ST_Intersects` so the parcel doesn't need to be fully within the precinct.
+Let's continue by finding the number of parcels which intersect each of the precincts, and order the results by the ward and precinct.  For this we'll use `ST_Intersects` so the parcel doesn't need to be fully within the precinct.
 
 ```SQL
 SELECT pr.precinct, COUNT(pa.fid)
 FROM precinct AS pr
-INNER JOIN parcels AS pa ON ST_INTERSECTS(ST_Transform(pr.wkb_geometry, 26915), pa.geom)
+INNER JOIN parcels AS pa ON ST_INTERSECTS(ST_Transform(pr.wkb_geometry, 26915), pa.shape)
 WHERE pr.precinct LIKE 'Minneapolis%'
 GROUP BY pr.precinct, pr.precinctid
 ORDER BY pr.precinctid
@@ -307,7 +307,7 @@ Here I've demonstrated some features of Postgres function definitions that are a
 ```SQL
 CREATE OR REPLACE FUNCTION bufferzone (pt GEOMETRY('Multipoint'))
 RETURNS Geometry('Multipolygon')
-AS 'SELECT ST_Buffer(pa.geom, 100/3.28084) FROM parcels AS pa WHERE ST_Contains(pa.geom, ST_Transform(pt, 26915))'
+AS 'SELECT ST_Buffer(pa.shape, 100/3.28084) FROM parcels AS pa WHERE ST_Contains(pa.shape, ST_Transform(pt, 26915))'
 LANGUAGE SQL
 STABLE
 RETURNS NULL ON NULL INPUT
@@ -387,7 +387,7 @@ Spatial indexes work most efficiently when comparing objects of similar sizes.
 For instance, if you wanted to find the parcels within 100 meters of US-169 in Minnesota, that may not work well: MN-169 has a bounding box that would include the entire Twin Cities metro, and runs from the southern border to well north of Duluth.
 The vast majority of Minnesota parcels will fall within that bounding box.
 
-To address this problem, the feature with the big box should be made small, so the parcels and road are more comparable in size.  Using the `ST_Segementize` and `ST_Subdivde` functions, we can chop up US-169 into 50 smaller pieces, and those pieces will be much better able to use the spatial index to speed up the querying.  `ST_Subdivide` also works with polygons, so you can take a big geometry (e.g. outline of Canada) and make it a bunch of smaller ones that will query much more easily, and then reconstitute it when needed.  Additionally, if you have multipart geometries that make a feature have a broad spatial extent, breaking it apart into individual features may also give the performance boost you need.
+To address this problem, the feature with the big box should be made small, so the parcels and road are more comparable in size.  Using the `ST_Segmentize` and `ST_Subdivide` functions, we can chop up US-169 into 50 smaller pieces, and those pieces will be much better able to use the spatial index to speed up the querying.  `ST_Subdivide` also works with polygons, so you can take a big geometry (e.g. outline of Canada) and make it a bunch of smaller ones that will query much more easily, and then reconstitute it when needed.  Additionally, if you have multipart geometries that make a feature have a broad spatial extent, breaking it apart into individual features may also give the performance boost you need.
 
 ### Vacuum Analyze
 
