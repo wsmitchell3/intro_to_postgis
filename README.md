@@ -289,7 +289,7 @@ Let's continue by finding the number of parcels which intersect each of the poll
 ```SQL
 SELECT pr.precinct, COUNT(pa.fid)
 FROM precinct AS pr
-INNER JOIN parcels AS pa ON ST_INTERSECTS(ST_Transform(pr.wkb_geometry, 26915), pa.geom)
+INNER JOIN parcels AS pa ON ST_INTERSECTS(ST_Transform(pr.wkb_geometry, 26915), pa.shape)
 WHERE pr.precinct LIKE 'Minneapolis%'
 GROUP BY pr.precinct, pr.precinctid
 ORDER BY pr.precinctid
@@ -307,7 +307,7 @@ Here I've demonstrated some features of Postgres function definitions that are a
 ```SQL
 CREATE OR REPLACE FUNCTION bufferzone (pt GEOMETRY('Multipoint'))
 RETURNS Geometry('Multipolygon')
-AS 'SELECT ST_Buffer(pa.geom, 100/3.28084) FROM parcels AS pa WHERE ST_Contains(pa.geom, ST_Transform(pt, 26915))'
+AS 'SELECT ST_Buffer(pa.shape, 100/3.28084) FROM parcels AS pa WHERE ST_Contains(pa.shape, ST_Transform(pt, 26915))'
 LANGUAGE SQL
 STABLE
 RETURNS NULL ON NULL INPUT
