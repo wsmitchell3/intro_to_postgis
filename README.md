@@ -382,10 +382,12 @@ While you may be able to get started without an understanding of indexing and th
 ### Spatial Indexing
 
 The index generally uses the bounding box of a line or polygon as a rough approximation of the feature.  
-Spatial indexes work most efficiently when comparing objects of similar sizes.
+When PostGIS runs a spatial relation function such as `ST_Overlaps`, `ST_Intersects`, or `ST_Touches`, the spatial index can quickly rule out feature pairs where the bounding boxes _don't_ overlap.
+Once the number of rows has been limited by the spatial index, the more expensive geometry comparison is run on the (hopefully much smaller) subset of potentially-overlapping features.
+Consequently, spatial indexes work most efficiently when comparing objects of similar sizes and when the bounding box is a good approximation of the feature.
 
 For instance, if you wanted to find the parcels within 100 meters of US-169 in Minnesota, that may not work well: MN-169 has a bounding box that would include the entire Twin Cities metro, and runs from the southern border to well north of Duluth.
-The vast majority of Minnesota parcels will fall within that bounding box.
+Because such a high percentage of the parcels in Minnesota would have an overlapping bounding box, many parcel polygons would need to be checked against the buffered road using the slow, complete check.
 
 To address this problem, the feature with the big box should be made small, so the parcels and road are more comparable in size.  Using the `ST_Segmentize` and `ST_Subdivide` functions, we can chop up US-169 into 50 smaller pieces, and those pieces will be much better able to use the spatial index to speed up the querying.  `ST_Subdivide` also works with polygons, so you can take a big geometry (e.g. outline of Canada) and make it a bunch of smaller ones that will query much more easily, and then reconstitute it when needed.  Additionally, if you have multipart geometries that make a feature have a broad spatial extent, breaking it apart into individual features may also give the performance boost you need.
 
