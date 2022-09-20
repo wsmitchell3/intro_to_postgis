@@ -336,9 +336,9 @@ From [the documentation](https://postgis.net/docs/geometry_distance_knn.html), i
 ```SQL
 -- Use the <-> operator to get the nearest five parcels to the centroid
 -- for Minneapolis W-8 P-1
-SELECT p.state_pin, p.geom
+SELECT p.state_pin, p.shape
 FROM parcels AS p
-ORDER BY geom <->
+ORDER BY shape <->
   (SELECT ST_Centroid(ST_Transform(pr.wkb_geometry, 26915))
   FROM precinct AS pr
 	WHERE pr.precinct = 'Minneapolis W-8 P-1')
@@ -366,10 +366,10 @@ SELECT ROW_NUMBER() OVER() AS fid
   , mpp.precinct_name
 	, pa.fid
 	, pa.state_pin
-	, pa.geom
+	, pa.shape
 FROM parcels AS pa,
   mock_polling_place AS mpp
-WHERE ST_DWithin(pa.geom, ST_Transform(mpp.geom, 26915), 100)
+WHERE ST_DWithin(pa.shape, ST_Transform(mpp.geom, 26915), 100)
 ;
 ```
 
